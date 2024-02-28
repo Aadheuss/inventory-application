@@ -2,4 +2,13 @@ extends layout
 
 block content
   h1= title
-  p Welcome to #{title}
+  p Welcome to The #[em Inventory] !
+
+  h1 Content
+
+  p Current inventory items
+
+  ul
+    li #[strong Items:] !{item_count}
+    li #[strong Categories:] !{category_count}
+
