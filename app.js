@@ -17,10 +17,12 @@ const mongoDB = process.env.MONGODB_URI;
 async function main() {
   await mongoose.connect(mongoDB);
 }
+
 main().catch((err) => console.log(err));
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
+const inventoryRouter = require("./routes/inventory"); //Import routes for "inventory" area of site
 
 const app = express();
 
@@ -36,6 +38,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+app.use("/inventory", inventoryRouter); // Add inventory routes to middleware chain.
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
