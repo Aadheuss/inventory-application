@@ -1,0 +1,19 @@
+extends layout
+
+block content
+
+  h1 Item: #{item.name}
+  p description: #{item.description}
+  p price: #{item.price}$
+  p stock: #{item.stock}
+  div(style='margin-left:20px;margin-top:20px')
+
+    h4 category
+    if item.category.length
+      dl
+        each category in item.category
+          dt
+            a(href=category.url) #{category.name}
+          dd #{category.description}
+    else
+      p This Item has no category.
