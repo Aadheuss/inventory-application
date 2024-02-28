@@ -31,7 +31,7 @@ exports.item_list = asyncHandler(async (req, res, next) => {
 exports.item_detail = asyncHandler(async (req, res, next) => {
   // Get details of item
   const item = await Item.findById(req.params.id).populate("category").exec();
-  console.log(item);
+
   if (item === null) {
     // No results.
     const err = new Error("Item not found");
