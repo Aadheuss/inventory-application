@@ -158,10 +158,102 @@ exports.item_delete_post = asyncHandler(async (req, res, next) => {
 
 // Display Item update form on GET.
 exports.item_update_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Item update GET");
+  // Get item, and categories for form.
+  const [item, allCategories] = await Promise.all([
+    Item.findById(req.params.id).exec(),
+    Category.find().sort({ name: 1 }).exec(),
+  ]);
+
+  if (item === null) {
+    // No results.
+    const err = new Error("Item not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  // Mark our selected category as checked.
+  allCategories.forEach((category) => {
+    if (item.category.includes(category._id)) category.checked = "true";
+  });
+
+  res.render("item_form", {
+    title: "Update Item",
+    item: item,
+    categories: allCategories,
+  });
 });
 
 // Handle Item update on POST.
-exports.item_update_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Item update POST");
-});
+exports.item_update_post = [
+  // Convert the category to an array.
+  (req, res, next) => {
+    if (!Array.isArray(req.body.category)) {
+      req.body.category =
+        typeof req.body.category === "undefined" ? [] : [req.body.category];
+    }
+    next();
+  },
+
+  // Validate and sanitize fields.
+  body("name", "Name must not be empty.").trim().isLength({ min: 1 }).escape(),
+  body("description", "Invalid description")
+    .optional({ values: "falsy" })
+    .trim()
+    .escape(),
+  body("price", "Price must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .isNumeric()
+    .withMessage("Only number is allowed.")
+    .escape(),
+  body("stock", "Price must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .isNumeric()
+    .withMessage("Only number is allowed.")
+    .escape(),
+  body("category.*").escape(),
+
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create an Item object with escaped/trimmed data and old id.
+    const item = new Item({
+      name: req.body.name,
+      description: req.body.description,
+      price: req.body.price,
+      stock: req.body.stock,
+      category:
+        typeof req.body.category === "undefined" ? [] : req.body.category,
+      _id: req.params.id, // This is required, or a new ID will be assigned!
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/error messages.
+
+      // Get all categories for form
+      const allCategories = await Category.find().sort({ name: 1 }).exec();
+
+      // Mark our selected category as checked.
+      for (const category of allCategories) {
+        if (item.genre.indexOf(category._id) > -1) {
+          genre.checked = "true";
+        }
+      }
+      res.render("item_form", {
+        title: "Update Item",
+        item: item,
+        categories: allCategories,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid. Update the record.
+      const updatedItem = await Item.findByIdAndUpdate(req.params.id, item, {});
+      // Redirect to item detail page.
+      res.redirect(updatedItem.url);
+    }
+  }),
+];
