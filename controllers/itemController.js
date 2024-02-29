@@ -49,7 +49,7 @@ exports.item_detail = asyncHandler(async (req, res, next) => {
 // Display Item create form on GET.
 exports.item_create_get = asyncHandler(async (req, res, next) => {
   // Get all categories which we can use for adding to our item.
-  const allCategories = await Category.find({}).sort("1").exec();
+  const allCategories = await Category.find({}).sort({ name: 1 }).exec();
 
   res.render("item_form", {
     title: "Create Item",
@@ -107,7 +107,7 @@ exports.item_create_post = [
       // There are errors. Render form again with sanitized values/error messages.
 
       // Get all category for form.
-      const allCategories = await Category.find({}).sort("1").exec();
+      const allCategories = await Category.find({}).sort({ name: 1 }).exec();
 
       // Mark our selected category as checked.
       for (const category of allCategories) {
