@@ -24,6 +24,9 @@ const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const inventoryRouter = require("./routes/inventory"); //Import routes for "inventory" area of site
 
+const compression = require("compression");
+const helmet = require("helmet");
+
 const app = express();
 
 // view engine setup
@@ -34,7 +37,20 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(compression()); // Compress all routes
+// Add helmet to the middleware chain.
+// Set CSP headers to allow our Bootstrap and Jquery to be served
+app.use(helmet());
 app.use(express.static(path.join(__dirname, "public")));
+
+// Set up rate limiter: maximum of twenty requests per minute
+const RateLimit = require("express-rate-limit");
+const limiter = RateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 20,
+});
+// Apply rate limiter to all requests
+app.use(limiter);
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
